@@ -28,10 +28,17 @@ if (!fs.existsSync(options.cache))
 
 const upload = multer({ dest: options.cache });
 
+const inventoryStorage = {};
+
 const server = http.createServer((req, res) => {
     const sendResponse = (statusCode, message) => {
         res.writeHead(statusCode, { 'Content-Type': 'text/plain; charset=utf-8' });
         res.end(message + '\n');
+    };
+
+    const sendJson = (statusCode, data) => {
+        res.writeHead(statusCode, { 'Content-Type': 'application/json; charset=utf-8' });
+        res.end(JSON.stringify(data));
     };
 
     const serveHTML = (filePath) => {
@@ -46,12 +53,13 @@ const server = http.createServer((req, res) => {
         });
     };
 
+    const urlParts = req.url.split('/');
+
     if (req.url === '/register')
     {
         if (req.method === 'GET')
         {
             serveHTML(path.join(__dirname, 'RegisterForm.html'));
-        
         }
         else if (req.method === 'POST')
         {
@@ -65,14 +73,37 @@ const server = http.createServer((req, res) => {
                     return sendResponse(400, 'bad request');
                 }
 
+                const id = Date.now().toString();
+                inventoryStorage[id] = {
+                    id: id,
+                    inventory_name: req.body.inventory_name,
+                    description: req.body.description || "",
+                    photoUrl: req.file ? `/inventory/${id}/photo` : null 
+                };
+
                 return sendResponse(201, 'created');
             });
-            
         }
         else
         {
             return sendResponse(405, 'method not allowed');
         }  
+    }
+    else if (req.method === 'GET' && req.url === '/inventory')
+    {
+        return sendJson(200, Object.values(inventoryStorage));
+    }
+    else if (req.method === 'GET' && urlParts[1] === 'inventory' && urlParts.length === 3)
+    {
+        const id = urlParts[2];
+        const item = inventoryStorage[id];
+
+        if (!item)
+        {
+            return sendResponse(404, 'not found');
+        }
+
+        return sendJson(200, item);
     }
     else
     {
