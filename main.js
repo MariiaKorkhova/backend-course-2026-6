@@ -135,7 +135,8 @@ const server = http.createServer((req, res) => {
                 }
             });
         } 
-        else {
+        else
+        {
             return sendResponse(405, 'method not allowed');
         }
     } 
