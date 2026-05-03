@@ -96,7 +96,7 @@ const swaggerDocument = {
         },
         '/register': {
             post: {
-                summary: 'register new item (multipart/form-data)',
+                summary: 'register new item',
                 requestBody: {
                     content: {
                         'multipart/form-data': {
@@ -139,105 +139,99 @@ const swaggerDocument = {
 };
 
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
-app.get('/RegisterForm.html', (req, res) => res.sendFile(path.join(__dirname, 'RegisterForm.html')));
-app.get('/SearchForm.html', (req, res) => res.sendFile(path.join(__dirname, 'SearchForm.html')));
+const methodNotAllowed = (req, res) => res.status(405).send('method not allowed');
+app.route('/RegisterForm.html')
+    .get((req, res) => res.sendFile(path.join(__dirname, 'RegisterForm.html')))
+    .all(methodNotAllowed);
 
-app.post('/register', upload.single('photo'), (req, res) => {
-    if (!req.body || !req.body.inventory_name)
-    {
-        return res.status(400).send('bad request');
-    }
+app.route('/SearchForm.html')
+    .get((req, res) => res.sendFile(path.join(__dirname, 'SearchForm.html')))
+    .all(methodNotAllowed);
 
-    const id = Date.now().toString();
+app.route('/register')
+    .post(upload.single('photo'), (req, res) => {
+        if (!req.body || !req.body.inventory_name) return res.status(400).send('bad request');
+        const id = Date.now().toString();
+        inventoryStorage[id] = {
+            id,
+            inventory_name: req.body.inventory_name,
+            description: req.body.description || "",
+            photoUrl: req.file ? `/inventory/${id}/photo` : null,
+            photoPath: req.file ? req.file.path : null
+        };
+        res.status(201).send(`created, ID: ${id}`);
+    })
+    .all(methodNotAllowed);
 
-    inventoryStorage[id] = {
-        id,
-        inventory_name: req.body.inventory_name,
-        description: req.body.description || "",
-        photoUrl: req.file ? `/inventory/${id}/photo` : null,
-        photoPath: req.file ? req.file.path : null
-    };
+app.route('/search')
+    .post((req, res) => {
+        const { id, has_photo } = req.body;
+        const item = inventoryStorage[id];
 
-    res.status(201).send(`created, ID: ${id}`);
-});
+        if (!item)
+        {
+            return res.status(404).send('not found');
+        }
 
-app.post('/search', (req, res) => {
-    const { id, has_photo } = req.body;
-    const item = inventoryStorage[id];
+        const result = { ...item };
 
-    if (!item)
-    {
-        return res.status(404).send('not found');
-    }
+        if (has_photo !== 'on')
+        {
+            delete result.photoUrl;
+        }
 
-    const result = { ...item };
+        delete result.photoPath;
+        res.json(result);
+    })
+    .all(methodNotAllowed);
 
-    if (has_photo !== 'on')
-    {
-        delete result.photoUrl;
-    }
+app.route('/inventory')
+    .get((req, res) => res.json(Object.values(inventoryStorage)))
+    .all(methodNotAllowed);
 
-    delete result.photoPath;
-    res.json(result);
-});
+app.route('/inventory/:id')
+    .get((req, res) => {
+        const item = inventoryStorage[req.params.id];
+        item ? res.json(item) : res.status(404).send('not found');
+    })
+    .put((req, res) => {
+        const id = req.params.id;
+        const item = inventoryStorage[id];
+        if (!item) return res.status(404).send('not found');
+        const { inventory_name, description } = req.body;
+        if (inventory_name) item.inventory_name = inventory_name;
+        if (description) item.description = description;
+        res.json(item);
+    })
+    .delete((req, res) => {
+        const item = inventoryStorage[req.params.id];
+        if (!item) return res.status(404).send('not found');
+        if (item.photoPath && fs.existsSync(item.photoPath)) fs.unlinkSync(item.photoPath);
+        delete inventoryStorage[req.params.id];
+        res.send('deleted');
+    })
+    .all(methodNotAllowed);
 
-app.get('/inventory', (req, res) => res.json(Object.values(inventoryStorage)));
-app.get('/inventory/:id', (req, res) => {
-    const item = inventoryStorage[req.params.id];
-    item ? res.json(item) : res.status(404).send('not found');
-});
+app.route('/inventory/:id/photo')
+    .get((req, res) => {
+        const item = inventoryStorage[req.params.id];
+        if (!item || !item.photoPath || !fs.existsSync(item.photoPath)) return res.status(404).send('not found');
+        res.set('Content-Type', 'image/jpeg');
+        res.sendFile(path.resolve(item.photoPath));
+    })
+    .put(upload.single('photo'), (req, res) => {
+        const item = inventoryStorage[req.params.id];
+        if (!item) return res.status(404).send('not found');
+        if (!req.file) return res.status(400).send('photo missing');
+        if (item.photoPath && fs.existsSync(item.photoPath)) fs.unlinkSync(item.photoPath);
+        item.photoPath = req.file.path;
+        item.photoUrl = `/inventory/${req.params.id}/photo`;
+        res.send('photo updated');
+    })
+    .all(methodNotAllowed);
 
-app.put('/inventory/:id', (req, res) => {
-    const id = req.params.id;
-    const item = inventoryStorage[id];
-
-    if (!item) {
-        return res.status(404).send('not found');
-    }
-
-    const { inventory_name, description } = req.body;
-
-    if (inventory_name)
-    {
-        item.inventory_name = inventory_name;
-    }
-
-    if (description)
-    {
-        item.description = description;
-    }
-
-    console.log(`item ${id} updated`);
-    res.json(item);
-});
-
-app.put('/inventory/:id/photo', upload.single('photo'), (req, res) => {
-    const item = inventoryStorage[req.params.id];
-    if (!item) return res.status(404).send('not found');
-    if (!req.file) return res.status(400).send('photo missing');
-
-    if (item.photoPath && fs.existsSync(item.photoPath)) {
-        fs.unlinkSync(item.photoPath);
-    }
-
-    item.photoPath = req.file.path;
-    item.photoUrl = `/inventory/${req.params.id}/photo`;
-    res.send('photo updated');
-});
-
-app.delete('/inventory/:id', (req, res) => {
-    const item = inventoryStorage[req.params.id];
-    if (!item) return res.status(404).send('not found');
-    if (item.photoPath && fs.existsSync(item.photoPath)) fs.unlinkSync(item.photoPath);
-    delete inventoryStorage[req.params.id];
-    res.send('deleted');
-});
-
-app.get('/inventory/:id/photo', (req, res) => {
-    const item = inventoryStorage[req.params.id];
-    if (!item || !item.photoPath || !fs.existsSync(item.photoPath)) return res.status(404).send('not found');
-    res.set('Content-Type', 'image/jpeg');
-    res.sendFile(path.resolve(item.photoPath));
+app.use((req, res) => {
+    res.status(404).send('not found');
 });
 
 app.listen(options.port, options.host, () => {
