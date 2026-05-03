@@ -1,0 +1,329 @@
+{
+  "info": {
+    "_postman_id": "5125ceb4-703e-43da-8241-7ebe0639c54c",
+    "name": "Inventory",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "54326553",
+    "_collection_link": "https://go.postman.co/collection/54326553-5125ceb4-703e-43da-8241-7ebe0639c54c?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "POST /register - 201",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "inventory_name",
+              "value": "someitem2",
+              "type": "text"
+            },
+            {
+              "key": "description",
+              "value": "oh2",
+              "type": "text"
+            },
+            {
+              "key": "photo",
+              "type": "file",
+              "src": "postman-cloud:///1f1471b9-1bfa-40e0-bc40-a56035799b82"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:3000/register",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "POST /register - 400",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "description",
+              "value": "no inventory_name",
+              "type": "text"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:3000/register",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "register"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET /inventory",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/inventory",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "inventory"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET /inventory/<ID>",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/inventory/1777841476597",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "inventory",
+            "1777841476597"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "PUT /inventory/<ID>",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"inventory_name\": \"changed_name\",\r\n  \"description\": \"new description\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "http://localhost:3000/inventory/1777841421468",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "inventory",
+            "1777841421468"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET /inventory/<ID>/photo",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"inventory_name\": \"new name\",\r\n  \"description\": \"new description\"\r\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/inventory/1777831938474/photo",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "inventory",
+            "1777831938474",
+            "photo"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "PUT /inventory/<ID>/photo",
+      "request": {
+        "method": "PUT",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "photo",
+              "type": "file",
+              "uuid": "fdf937d4-ef28-4b77-9a9e-ef4fadfb823b",
+              "src": "postman-cloud:///1f1471b9-1bfa-40e0-bc40-a56035799b82"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:3000/inventory/1777831938474/photo",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "inventory",
+            "1777831938474",
+            "photo"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "DELETE /inventory/<ID>",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/inventory/177783193847",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "inventory",
+            "177783193847"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET /RegisterForm.html",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "photo",
+              "type": "file",
+              "uuid": "fdf937d4-ef28-4b77-9a9e-ef4fadfb823b",
+              "src": "postman-cloud:///1f1471b9-1bfa-40e0-bc40-a56035799b82"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:3000/RegisterForm.html",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "RegisterForm.html"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "GET /SearchForm.html",
+      "protocolProfileBehavior": {
+        "disableBodyPruning": true
+      },
+      "request": {
+        "method": "GET",
+        "header": [],
+        "body": {
+          "mode": "formdata",
+          "formdata": [
+            {
+              "key": "photo",
+              "type": "file",
+              "uuid": "fdf937d4-ef28-4b77-9a9e-ef4fadfb823b",
+              "src": "postman-cloud:///1f1471b9-1bfa-40e0-bc40-a56035799b82"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:3000/SearchForm.html",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "SearchForm.html"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "POST /search",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "urlencoded",
+          "urlencoded": [
+            {
+              "key": "id",
+              "value": "1777841476597",
+              "type": "text",
+              "uuid": "965a71f8-b74e-4e3d-9b01-fc6a42f852ae"
+            },
+            {
+              "key": "has_photo",
+              "value": "on",
+              "type": "text",
+              "uuid": "2c4453e9-e22f-46b0-ac70-aa10e53018a2"
+            }
+          ]
+        },
+        "url": {
+          "raw": "http://localhost:3000/search",
+          "protocol": "http",
+          "host": [
+            "localhost"
+          ],
+          "port": "3000",
+          "path": [
+            "search"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}
