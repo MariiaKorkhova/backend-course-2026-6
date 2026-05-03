@@ -13,7 +13,6 @@ program
             if (str.includes("required option")) {
                 return write("error: required options not specified (-h, -p, -c)\n");
             }
-            
             return write(str);
         }
     })
@@ -53,7 +52,6 @@ const server = http.createServer((req, res) => {
 
     const urlParts = req.url.split('/');
 
-    // POST /register
     if (req.url === '/register') {
         if (req.method === 'GET') {
             serveHTML(path.join(__dirname, 'RegisterForm.html'));
@@ -68,7 +66,7 @@ const server = http.createServer((req, res) => {
                     inventory_name: req.body.inventory_name,
                     description: req.body.description || "",
                     photoUrl: req.file ? `/inventory/${id}/photo` : null,
-                    photoPath: req.file ? req.file.path : null // Зберігаємо шлях для GET /photo
+                    photoPath: req.file ? req.file.path : null
                 };
 
                 return sendResponse(201, 'created');
@@ -76,12 +74,10 @@ const server = http.createServer((req, res) => {
         } else {
             return sendResponse(405, 'method not allowed');
         }
-    } 
-    // GET /inventory
+    }
     else if (req.method === 'GET' && req.url === '/inventory') {
         return sendJson(200, Object.values(inventoryStorage));
     }
-    // Маршрути /inventory/<ID>...
     else if (urlParts[1] === 'inventory') {
         const id = urlParts[2];
         const item = inventoryStorage[id];
@@ -96,11 +92,34 @@ const server = http.createServer((req, res) => {
             res.writeHead(200, { 'Content-Type': 'image/jpeg' });
             fs.createReadStream(item.photoPath).pipe(res);
         } 
-        // GET /inventory/<ID>
+        // PUT /inventory/<ID>/photo
+        else if (req.method === 'PUT' && urlParts[3] === 'photo') {
+            upload.single('photo')(req, res, (err) => {
+                if (err) return sendResponse(500, 'internal server error');
+                if (!req.file) return sendResponse(400, 'bad request: photo missing');
+
+                if (item.photoPath && fs.existsSync(item.photoPath)) {
+                    fs.unlinkSync(item.photoPath);
+                }
+
+                item.photoPath = req.file.path;
+                item.photoUrl = `/inventory/${id}/photo`;
+
+                return sendResponse(200, 'photo updated');
+            });
+        }
+        // DELETE /inventory/<ID>
+        else if (req.method === 'DELETE' && urlParts.length === 3) {
+            if (item.photoPath && fs.existsSync(item.photoPath)) {
+                fs.unlinkSync(item.photoPath);
+            }
+            
+            delete inventoryStorage[id];
+            return sendResponse(200, 'deleted');
+        }
         else if (req.method === 'GET' && urlParts.length === 3) {
             return sendJson(200, item);
         }
-        // PUT /inventory/<ID>
         else if (req.method === 'PUT' && urlParts.length === 3) {
             let body = '';
             req.on('data', chunk => { body += chunk.toString(); });
