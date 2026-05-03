@@ -130,7 +130,8 @@ const server = http.createServer((req, res) => {
                     if (data.description) item.description = data.description;
                     
                     return sendJson(200, item);
-                } catch (e) {
+                } catch (e)
+                {
                     return sendResponse(400, 'invalid JSON');
                 }
             });
